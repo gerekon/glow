@@ -287,7 +287,7 @@ public:
     // Check that all arguments are constants.
     // Form the set of arguments to be specialized.
     unsigned argIdx = 0;
-    for (auto &arg : call->arg_operands()) {
+    for (auto &arg : call->args()) {
       auto curArgIdx = argIdx++;
 
       if (!shouldSpecializeParameter(arg, curArgIdx, callee)) {
@@ -389,7 +389,7 @@ private:
       // We can compute the hash this way, because these arguments are LLVM
       // constants which are uniqued. Therefore, the address of a constant is
       // its unique representation.
-      for (unsigned idx = 0, e = key.call_->getNumArgOperands(); idx < e;
+      for (unsigned idx = 0, e = key.call_->arg_size(); idx < e;
            ++idx) {
         if (isArgToBeSpecialized(key.argsToBeSpecialized_, idx)) {
           hash = llvm::hash_combine(
@@ -408,7 +408,7 @@ private:
         return false;
       if (lhs.argsToBeSpecialized_ != rhs.argsToBeSpecialized_)
         return false;
-      for (unsigned idx = 0, e = lhs.call_->getNumArgOperands(); idx < e;
+      for (unsigned idx = 0, e = lhs.call_->arg_size(); idx < e;
            ++idx) {
         if (isArgToBeSpecialized(lhs.argsToBeSpecialized_, idx)) {
           if (getConstantValue(lhs.call_->getArgOperand(idx)) !=

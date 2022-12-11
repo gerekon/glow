@@ -567,7 +567,9 @@ void LLVMIRGen::emitArrayStore(llvm::IRBuilder<> &builder,
     assert(vals[idx]->getType()->getPointerTo() == basePtr->getType() &&
            "Mismatch between pointer and value type!");
     auto *storeIdx = builder.getInt32(idx + baseIdx);
-    auto *storeAddr = builder.CreateGEP(basePtr, storeIdx);
+    // auto *storeAddr = builder.CreateGEP(basePtr, storeIdx);
+    llvm::ArrayRef<llvm::Value *> IdxList(storeIdx);
+    auto *storeAddr = builder.CreateGEP(nullptr, basePtr, IdxList);
     builder.CreateStore(vals[idx], storeAddr);
   }
 }
@@ -3627,14 +3629,18 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
     opInfoPtr = builder.CreateBitCast(opInfoPtr, builder.getInt8PtrTy());
 
     // Emit opAddr address as uint8_t** starting from offset 0.
-    auto *opAddrPtr =
-        builder.CreateGEP(opInfoPtr, llvm::ConstantInt::get(intTy, 0));
+    // auto *opAddrPtr =
+    //     builder.CreateGEP(opInfoPtr, llvm::ConstantInt::get(intTy, 0));
+    llvm::ArrayRef<llvm::Value *> IdxList(llvm::ConstantInt::get(intTy, 0));
+    auto *opAddrPtr = builder.CreateGEP(nullptr, opInfoPtr, IdxList);
     opAddrPtr = builder.CreateBitCast(opAddrPtr,
                                       builder.getInt8PtrTy()->getPointerTo());
 
     // Emit opSize address as int* starting from offset opNum * sizeof(int64_t).
-    auto *opSizePtr = builder.CreateGEP(
-        opInfoPtr, llvm::ConstantInt::get(intTy, opNum * sizeof(int64_t)));
+    // auto *opSizePtr = builder.CreateGEP(
+    //     opInfoPtr, llvm::ConstantInt::get(intTy, opNum * sizeof(int64_t)));
+    llvm::ArrayRef<llvm::Value *> IdxList2(llvm::ConstantInt::get(intTy, opNum * sizeof(int64_t)));
+    auto *opSizePtr = builder.CreateGEP(nullptr, opInfoPtr, IdxList2);
     opSizePtr = builder.CreateBitCast(opSizePtr, intTy->getPointerTo());
 
     // Generate instrumentation.
@@ -3884,14 +3890,18 @@ void LLVMIRGen::generateLLVMIRForInstr(llvm::IRBuilder<> &builder,
     opInfoPtr = builder.CreateBitCast(opInfoPtr, builder.getInt8PtrTy());
 
     // Emit opAddr address as uint8_t** starting from offset 0.
-    auto *opAddrPtr =
-        builder.CreateGEP(opInfoPtr, llvm::ConstantInt::get(intTy, 0));
+    // auto *opAddrPtr =
+    //     builder.CreateGEP(opInfoPtr, llvm::ConstantInt::get(intTy, 0));
+    llvm::ArrayRef<llvm::Value *> IdxList(llvm::ConstantInt::get(intTy, 0));
+    auto *opAddrPtr = builder.CreateGEP(nullptr, opInfoPtr, IdxList);
     opAddrPtr = builder.CreateBitCast(opAddrPtr,
                                       builder.getInt8PtrTy()->getPointerTo());
 
     // Emit opSize address as int* starting from offset opNum * sizeof(int64_t).
-    auto *opSizePtr = builder.CreateGEP(
-        opInfoPtr, llvm::ConstantInt::get(intTy, opNum * sizeof(int64_t)));
+    // auto *opSizePtr = builder.CreateGEP(
+    //     opInfoPtr, llvm::ConstantInt::get(intTy, opNum * sizeof(int64_t)));
+    llvm::ArrayRef<llvm::Value *> IdxList2(llvm::ConstantInt::get(intTy, opNum * sizeof(int64_t)));
+    auto *opSizePtr = builder.CreateGEP(nullptr, opInfoPtr, IdxList2);
     opSizePtr = builder.CreateBitCast(opSizePtr, intTy->getPointerTo());
 
     // Operands addresses and sizes.
@@ -4047,7 +4057,8 @@ unsigned LLVMIRGen::getLibjitIntWidth() const {
   auto *intVar = getModule().getGlobalVariable("libjit_intVar",
                                                /* allowInternal */ true);
   assert(intVar && "libjit_intVar is not found");
-  return intVar->getType()->getPointerElementType()->getIntegerBitWidth();
+  llvm::PointerType *t = intVar->getType();
+  return t->getPointerElementType()->getIntegerBitWidth();
 }
 
 bool LLVMIRGen::isEligibleForSpecialization(const llvm::CallInst *call) {

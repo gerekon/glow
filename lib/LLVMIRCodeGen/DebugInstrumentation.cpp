@@ -253,7 +253,7 @@ public:
 
               // Args to be used for calling the specialized function.
               llvm::SmallVector<llvm::Value *, 16> argsForInstr;
-              for (auto &arg : CI->arg_operands()) {
+              for (auto &arg : CI->args()) {
                 argsForInstr.push_back(arg);
               }
 
@@ -314,7 +314,12 @@ private:
         auto *value = op.get();
         // If arg is a pointer to integer value get value and print it.
         if (type->isPointerTy()) {
-          value = builder.CreateLoad(op.get());
+          // value = builder.CreateLoad(op.get());
+          // Above code used removed function:
+          // LoadInst *CreateLoad(Value *Ptr, const Twine &Name = "") {
+          //   return CreateLoad(Ptr->getType()->getPointerElementType(), Ptr, Name);
+          // }
+          value = builder.CreateLoad(type->getPointerElementType(), value);
         }
 
         std::string quant = "\targ: %";

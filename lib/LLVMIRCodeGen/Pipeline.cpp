@@ -114,8 +114,7 @@ void LLVMIRGen::updateInlineAttributes(llvm::Module *M) {
     // Replace the target-specific machine code function attributes that were
     // attached by the frontend. Keep return and parameter attributes, e.g.,
     // noalias.
-    FF.setAttributes(FF.getAttributes().removeAttributes(
-        M->getContext(), llvm::AttributeList::FunctionIndex));
+    FF.setAttributes(FF.getAttributes().removeFnAttributes(M->getContext()));
     if (hasOmitFramePointer) {
       FF.addFnAttr("omit-frame-pointer",
                    omitFramePointerAttr.getValueAsString());
