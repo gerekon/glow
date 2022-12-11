@@ -779,8 +779,10 @@ void BundleSaver::emitBundleConfig() {
         llvm::GlobalValue::LinkageTypes::ExternalLinkage, nullptr,
         irgen_->getBundleName().str() + "_config");
   } else {
+    // bundleConfigTy = llvm::dyn_cast<llvm::StructType>(
+    //     config->getType()->getPointerElementType());
     bundleConfigTy = llvm::dyn_cast<llvm::StructType>(
-        config->getType()->getPointerElementType());
+        config->getValueType());
   }
 
   // If symbolTable is not the same type as bundleConfig struct's symbolTable

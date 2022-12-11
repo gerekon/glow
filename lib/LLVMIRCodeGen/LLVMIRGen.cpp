@@ -79,6 +79,7 @@ LLVMIRGen::LLVMIRGen(const IRFunction *F, AllocationsInfo &allocationsInfo,
       objectRegistry_(objectRegistry) {
   // Legalize main entry name.
   setMainEntryName(mainEntryName);
+  ctx_->setOpaquePointers(false);
 }
 
 /// Mutex to protect LLVM's TargetRegistry.
@@ -4050,15 +4051,16 @@ unsigned LLVMIRGen::getLibjitSizeTWidth() const {
   auto *sizeTVar = getModule().getGlobalVariable("libjit_sizeTVar",
                                                  /* allowInternal */ true);
   assert(sizeTVar && "libjit_sizeTVar is not found");
-  return sizeTVar->getType()->getPointerElementType()->getIntegerBitWidth();
+  // return sizeTVar->getType()->getPointerElementType()->getIntegerBitWidth();
+  return sizeTVar->getValueType()->getIntegerBitWidth();
 }
 
 unsigned LLVMIRGen::getLibjitIntWidth() const {
   auto *intVar = getModule().getGlobalVariable("libjit_intVar",
                                                /* allowInternal */ true);
   assert(intVar && "libjit_intVar is not found");
-  llvm::PointerType *t = intVar->getType();
-  return t->getPointerElementType()->getIntegerBitWidth();
+  // return intVar->getType()->getPointerElementType()->getIntegerBitWidth();
+  return intVar->getValueType()->getIntegerBitWidth();
 }
 
 bool LLVMIRGen::isEligibleForSpecialization(const llvm::CallInst *call) {
